@@ -1,0 +1,20 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* built-in css */
+
+body { /* global body */
+    margin: 0;
+    overflow: hidden; 
+    background-color: grey;
+}
+
+/* classes etc... */
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
