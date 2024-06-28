@@ -8,13 +8,18 @@
 body { /* global body */
     margin: 0;
     overflow: hidden; 
-    background-color: grey;
+    background-color: white;
 }
 
 /* classes etc... */
 
+.wrapper {
+    display: flex;
+    background-color: wheat;
+
+}
+
 canvas {
-    display: block;
     width: 100%;
     height: 100%;
 }
