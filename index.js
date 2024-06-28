@@ -10,7 +10,7 @@ onload = () => { //await onload page event.
     }
 
     //manage objects
-    let grid = new Map(); // add objects of cell to array (render from this map)
+    let grid = new Set(); // add objects of cell set of array (render from this set)
 
     //previous mouse pos.
     let x = 0; 
@@ -30,14 +30,14 @@ onload = () => { //await onload page event.
     }
 
     function init() {
-        size((Math.round(window.innerWidth / spacing)*spacing), Math.round(window.innerHeight / spacing)*spacing);
+        //+spacing at end of y part to fill in the void from of page./
+        size((Math.round(window.innerWidth / spacing)*spacing), (Math.round(window.innerHeight / spacing)*spacing)+spacing);
         draw();
     }
 
     function draw() { //draw canvas grid
         ctx.save();
         ctx.fillStyle = "white";
-
         ctx.strokeStyle = "#eeeee";
         // ctx.lineWidth = 0.5;
 
@@ -82,21 +82,21 @@ onload = () => { //await onload page event.
         // dx, -dy 
         // -dx, dy
 
-        if (dx >= 0 && dy >= 0) { // +dx, +dy
-            ctx.fillRect(50-Math.abs(dx),50-Math.abs(dy), spacing, spacing)
-        }
+        // if (dx >= 0 && dy >= 0) { // +dx, +dy
+        //     ctx.fillRect(50-Math.abs(dx),50-Math.abs(dy), spacing, spacing)
+        // }
 
-        if (dx <= 0 && dy <= 0) { // -dx, -dy
-            ctx.fillRect(50+Math.abs(dx),50+Math.abs(dy), spacing, spacing)
-        } 
+        // if (dx <= 0 && dy <= 0) { // -dx, -dy
+        //     ctx.fillRect(50+Math.abs(dx),50+Math.abs(dy), spacing, spacing)
+        // } 
 
-        if (dx <= 0 && dy >= 0) { // -dx, +dy
-            ctx.fillRect(50+Math.abs(dx),50-Math.abs(dy), spacing, spacing)
-        }
+        // if (dx <= 0 && dy >= 0) { // -dx, +dy
+        //     ctx.fillRect(50+Math.abs(dx),50-Math.abs(dy), spacing, spacing)
+        // }
 
-        if (dx >= 0 && dy <= 0) { // +dx, -dy
-            ctx.fillRect(50-Math.abs(dx), 50+Math.abs(dy), spacing, spacing)
-        }
+        // if (dx >= 0 && dy <= 0) { // +dx, -dy
+        //     ctx.fillRect(50-Math.abs(dx), 50+Math.abs(dy), spacing, spacing)
+        // }
 
         ctx.stroke(); //render lines
         ctx.closePath(); //stop drawing lines
@@ -106,43 +106,14 @@ onload = () => { //await onload page event.
 
     init()
 
-    class Cell {
-        //state of cell (0) (1), neighbor count
-        constructor(_cell) {
-            //convert cell x,y to coord. x,y
-            this._x = (_cell[0] * spacing); //cell # of x.
-            this._y = (_cell[1] * spacing); //cell # of y.
-
-            this.state = false;
-            this.adjacent = null;
-        }
-
-        //mutator method
-
-        /**
-         * @param {boolean} i
-         */
-        set sta(i) {
-            this.state = i;
-        }
-
-
-        //accessor method
-
-        //self is a keyword (cannot use as method identifier)
-        //cell is id, will return element cell. (cannot use as method identifier)
-        
-        get c() {
-            return [this._x, this._y];
-        }
-
-    }
-
     // a b c
     // d z e
     // f g h
-    function add(cell) { //check adjacent cell (1) relative to this cell. (if conditions right, add to cell array)
-        let z = cell.c;
+    let local = null;
+    function add(cell) { //check adjacent cell (1) relative to this cell. (if conditions right, add to cell map)
+        let z = cell;
+
+        //cells in grid relative to z (itself)
 
         let a = [z[0]-spacing, z[1]-spacing];
         let b = [z[0]+0, z[1]-spacing];
@@ -156,24 +127,65 @@ onload = () => { //await onload page event.
         let h = [z[0]+spacing, z[1]+spacing];
 
         //adjacent cells
-        let local = [a,b,c,d,e,f,g,h];
+        local = [a,b,c,d,e,f,g,h];
 
-        grid.forEach((c) => {
-            local.forEach((l) => {
-                if (c._x == l[0] && c._y == l[1]) {
-                    console.log("@")
-                }
-            });                
-        });
+        let count = null; //count adjacent cells
+
+        //o(n) time complexity, as it is o(l * g) local * grid , but since local will not grow in size, 8*n therefore o(n) 
+        //check adjacent cells relative to current cell
+        // local.forEach((l) => {
+        //     grid.forEach((c) => {
+        //         if (c[0]*spacing == l[0] && c[1]*spacing == l[1]) {
+        //             count += 1;
+        //         }
+        //     });
+        // });
+
+        //o(8) time complexity, as it's only iterating through local. for set.has() method is o(1), there having 8 elements in local, grid has to check local 8 times. -> o(8).
+        for (let l of local) {
+            let c = [l[0]/spacing,l[1]/spacing]
+
+            if (grid.has(c.toString())) {
+                count += 1;
+            }
+        }
+
+
+        // for (let c of grid) {
+        //     console.log(c[0]*spacing,);
+        // }
+
+        console.log("neighbors of",z[0],z[1],": ", count)
+    }
+
+    function adjacent(local) { //check neighboring cell of checked cell. 
+        for (let i = 0; i <= local.length; i++) {
+              
+        }
+    }
+
+    function step() {
 
     }
 
-    let xz = new Cell([0,0])
-    grid.set(0,xz)
+    //test for neightbors of [1,1]
+    let a = [0,0]; grid.add(a.toString());
+    let b = [1,0]; grid.add(b.toString());
+    let c = [2,0]; grid.add(c.toString());
+    let d = [0,1]; grid.add(d.toString());
+    let e = [1,1]; grid.add(e.toString());
+    let f = [2,1]; grid.add(f.toString());
+    let g = [0,2]; grid.add(g.toString());
+    let h = [1,2]; grid.add(h.toString());
+    let i = [2,2]; grid.add(i.toString());
+
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
+    //have to convert coordinates [x,y] to string "[x,y]", as .add([0,0]) won't reference to the same .has([0,0])
+
 
     // onresize event handler property
     onresize = () => {
-        size((Math.round(window.innerWidth / spacing)*spacing), Math.round(window.innerHeight / spacing)*spacing);
+        size((Math.round(window.innerWidth / spacing)*spacing), (Math.round(window.innerHeight / spacing)*spacing)+spacing);
         draw();
     }
 
@@ -187,15 +199,17 @@ onload = () => { //await onload page event.
 
         console.log("\noriginal mousedown pos:",x,"x",y)
 
-        // console.log(Math.ceil(x*spacing) / spacing)
-        let cell = [Math.floor(x/spacing), Math.floor(y/spacing)];
-        console.log(Math.floor(x/50)*50, Math.floor(y/50)*50)
-        
-        let a = new Cell(cell);
+        console.log(Math.floor(x/50)*50, Math.floor(y/50)*50) //coordinates
+        console.log(Math.floor(x/spacing), Math.floor(y/spacing)) //cell x,y
+
+        let cell = [Math.floor(x/50)*50, Math.floor(y/50)*50]
+
+        //add Cell to Map() "memory"
+        let a = cell;
         add(a);
 
 
-
+        step();
     }
 
     onmouseup = () => {
@@ -205,6 +219,7 @@ onload = () => { //await onload page event.
         console.log("new mouse pos:",x + dx,"x",y + -dy);
         draw();
 
+        document.body.style.cursor = "default";
     }
 
     onmousemove = (event) => {
@@ -213,8 +228,9 @@ onload = () => { //await onload page event.
             dy = y - event.clientY ; //displacement in y coordinate from origin pos.
             draw();
             // console.log(dx, dy)
+
+            document.body.style.cursor = "grabbing";
         }
-        
     }
 
     //onkey... event handler property
