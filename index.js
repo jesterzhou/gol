@@ -10,7 +10,7 @@ onload = () => { //await onload page event.
     }
 
     //manage objects
-    let grid = new Set(); // add objects of cell set of array (render from this set)
+    let grid = new Set(); // add objects of cell set of array (render from this set), store it as [row-column], not coordinate [x,y]
 
     //previous mouse pos.
     let x = 0; 
@@ -110,8 +110,8 @@ onload = () => { //await onload page event.
     // d z e
     // f g h
     let local = null;
-    function add(cell) { //check adjacent cell (1) relative to this cell. (if conditions right, add to cell map)
-        let z = cell;
+    function add(cell) { //check adjacent cell (1) relative to this cell. (if conditions right, add to cell set)
+        let z = cell; //for computation of adjacent, use [x,y] of cell provided.
 
         //cells in grid relative to z (itself)
 
@@ -130,37 +130,32 @@ onload = () => { //await onload page event.
         local = [a,b,c,d,e,f,g,h];
 
         let count = null; //count adjacent cells
-
-        //o(n) time complexity, as it is o(l * g) local * grid , but since local will not grow in size, 8*n therefore o(n) 
-        //check adjacent cells relative to current cell
-        // local.forEach((l) => {
-        //     grid.forEach((c) => {
-        //         if (c[0]*spacing == l[0] && c[1]*spacing == l[1]) {
-        //             count += 1;
-        //         }
-        //     });
-        // });
-
         //o(8) time complexity, as it's only iterating through local. for set.has() method is o(1), there having 8 elements in local, grid has to check local 8 times. -> o(8).
         for (let l of local) {
-            let c = [l[0]/spacing,l[1]/spacing]
-
-            if (grid.has(c.toString())) {
+            let c = [l[0]/spacing,l[1]/spacing].toString();
+            if (grid.has(c)) {
                 count += 1;
             }
         }
 
+        console.log("neighbors of",z[0]/spacing,z[1],": ", count)
 
-        // for (let c of grid) {
-        //     console.log(c[0]*spacing,);
-        // }
-
-        console.log("neighbors of",z[0],z[1],": ", count)
+        // adjacent(local);
     }
 
-    function adjacent(local) { //check neighboring cell of checked cell. 
-        for (let i = 0; i <= local.length; i++) {
-              
+    function adjacent(local) { //check neighboring adjacent (empty / dead) cells for neighboring alive cells. for condition 4
+        let count = null;
+        for (let l of local) {
+            let c = [l[0]/spacing, l[1]/spacing].toString();
+            if (grid.has(c)) {
+                count += 1;
+            }
+
+            if (count < 2) {
+                grid.remove(c.toString());
+            } else if (count > 3) {
+                grid.remove(c.toString());
+            }
         }
     }
 
@@ -169,19 +164,19 @@ onload = () => { //await onload page event.
     }
 
     //test for neightbors of [1,1]
-    let a = [0,0]; grid.add(a.toString());
-    let b = [1,0]; grid.add(b.toString());
-    let c = [2,0]; grid.add(c.toString());
-    let d = [0,1]; grid.add(d.toString());
-    let e = [1,1]; grid.add(e.toString());
-    let f = [2,1]; grid.add(f.toString());
-    let g = [0,2]; grid.add(g.toString());
-    let h = [1,2]; grid.add(h.toString());
-    let i = [2,2]; grid.add(i.toString());
+    // let a = [0,0]; grid.add(a.toString());
+    // let b = [1,0]; grid.add(b.toString());
+    // let c = [2,0]; grid.add(c.toString());
+    // let d = [0,1]; grid.add(d.toString());
+    // let e = [1,1]; grid.add(e.toString());
+    // let f = [2,1]; grid.add(f.toString());
+    // let g = [0,2]; grid.add(g.toString());
+    // let h = [1,2]; grid.add(h.toString());
+    // let i = [2,2]; grid.add(i.toString());
 
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
     //have to convert coordinates [x,y] to string "[x,y]", as .add([0,0]) won't reference to the same .has([0,0])
-
+    //my understanding is that strings are stored in string pools, and since ["a","b"] is just an object of type String {"a", "b"}, it'll be in the string-pool, where it can be referenced.
 
     // onresize event handler property
     onresize = () => {
@@ -197,25 +192,30 @@ onload = () => { //await onload page event.
         x = event.clientX + dx;  
         y = event.clientY + dy;
 
-        console.log("\noriginal mousedown pos:",x,"x",y)
+        console.log("\noriginal mousedown coordinates:",x,"x",y)
 
-        console.log(Math.floor(x/50)*50, Math.floor(y/50)*50) //coordinates
-        console.log(Math.floor(x/spacing), Math.floor(y/spacing)) //cell x,y
+        console.log("rounded coordinates:", Math.floor(x/50)*50, Math.floor(y/50)*50) //coordinates
+        console.log("cell number:", Math.floor(x/spacing), Math.floor(y/spacing)) //cell x,y
 
-        let cell = [Math.floor(x/50)*50, Math.floor(y/50)*50]
+        let cell = [Math.floor(x/50)*50, Math.floor(y/50)*50] //let cell be the coordinates of the cell number / row-columns 
 
-        //add Cell to Map() "memory"
-        let a = cell;
-        add(a);
+        let c = [cell[0]/spacing.toString(), cell[1]/spacing.toString()]; //let c be [row-column] format 
 
+        //check if set contains cell already (add, remove feature), store as [row-column]
+        if (grid.has(c.toString())) {
+            grid.delete(c.toString());
+        } else {
+            grid.add(c.toString());
+        }
+        console.log(grid);
 
-        step();
+        draw();
     }
 
     onmouseup = () => {
         events.md = false;
         
-        console.log("change in mouse pos from (0,0)",dx,"x",-dy); //negative dy for opposite movement of cursor in y direction
+        console.log("\nchange in mouse pos from (0,0)",dx,"x",-dy); //negative dy for opposite movement of cursor in y direction
         console.log("new mouse pos:",x + dx,"x",y + -dy);
         draw();
 
@@ -227,24 +227,22 @@ onload = () => { //await onload page event.
             dx = x - event.clientX ; //displacement in x coordinate from origin pos.
             dy = y - event.clientY ; //displacement in y coordinate from origin pos.
             draw();
-            // console.log(dx, dy)
 
             document.body.style.cursor = "grabbing";
         }
     }
 
-    //onkey... event handler property
+    // //onkey... event handler property
     onkeydown = (event) => {
-        // if (event.ctrlKey) {
-        //     events.ctrl = true; 
-        // }
+        if (event.ctrlKey) {
+            // events.ctrl = true;
+        }
     }
  
-    onkeyup = () => {
-        // events.ctrl = false;
-    }
+    // onkeyup = () => {
+    //     // events.ctrl = false;
+    // }
 }
-
 
 //note
 // equivalent to writing a "addEventListener() method"
