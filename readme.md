@@ -15,6 +15,5 @@
 
     additional features (can implement or havent figured):
     - add zoom feature (in and out) for canvas
-    - unnecessary calculations (changing from cell # to coordinate values x,y), could keep it as just coordinates
     - add ctrl + grab to pan canvas
     - better rendering system / caching system, i.e. when cells are not within viewport, they can "disappear" to save on memory.
