@@ -1,7 +1,9 @@
-onload = () => { //await onload page event.
+//author : jester zhou
+//https://github.com/jesterzhou/gol
 
-    let spacing = 50; //cell grid 25 x 25
-    let lines = "#eee"; //grid grey.
+onload = () => { //await onload page event.
+    let spacing = 20; //cell grid n x n
+    let lines = "#737A7A"; //grid grey.
     let cell_color = "#ccc"; //cell colour grey.
 
     let events = { //state of events.
@@ -10,7 +12,7 @@ onload = () => { //await onload page event.
     }
 
     //manage objects
-    let grid = new Set(); // add objects of cell set of array (render from this set), store it as [row-column], not coordinate [x,y]
+    let live = new Set(); // add objects of cell, store it as [row-column], not coordinate [x,y] ... all live cells
 
     //previous mouse pos.
     let x = 0; 
@@ -30,16 +32,15 @@ onload = () => { //await onload page event.
     }
 
     function init() {
-        //+spacing at end of y part to fill in the void from of page./
-        size((Math.round(window.innerWidth / spacing)*spacing), (Math.round(window.innerHeight / spacing)*spacing)+spacing);
+        //+spacing at end of x and y part to fill in the void from of page./
+        size(Math.round(window.innerWidth/spacing)*spacing+spacing, Math.round(window.innerHeight/spacing)*spacing+spacing);
         draw();
     }
 
     function draw() { //draw canvas grid
         ctx.save();
-        ctx.fillStyle = "white";
-        ctx.strokeStyle = "#eeeee";
-        // ctx.lineWidth = 0.5;
+        ctx.fillStyle = cell_color;
+        ctx.strokeStyle = lines;
 
         ctx.clearRect(0,0, canvas.width, canvas.height); //clear canvas from (0,0)        
         ctx.beginPath();
@@ -49,7 +50,7 @@ onload = () => { //await onload page event.
         
         //add '/ spacing' after x < canvas.width + Math.abs(dx) , to view original viewport sized canvas
         // column lines
-        for (let x = 0.5; x < canvas.width + Math.abs(dx) / spacing; x += spacing) {
+        for (let x = 0.5; x < canvas.width + Math.abs(dx); x += spacing) {
             if (dx > 0) {
                 //span +x
                 ctx.moveTo(-dx + x, 0); //dx + x, top
@@ -62,7 +63,7 @@ onload = () => { //await onload page event.
         }
     
         // row lines
-        for (let y = 0.5; y < canvas.height + Math.abs(dy) / spacing; y += spacing) {
+        for (let y = 0.5; y < canvas.height + Math.abs(dy); y += spacing) {
             if (dy > 0) {
                 //span (down) +y 
                 ctx.moveTo(0, -dy + y); //-inf, top
@@ -82,21 +83,28 @@ onload = () => { //await onload page event.
         // dx, -dy 
         // -dx, dy
 
-        // if (dx >= 0 && dy >= 0) { // +dx, +dy
-        //     ctx.fillRect(50-Math.abs(dx),50-Math.abs(dy), spacing, spacing)
-        // }
+        for (let value of live.values()) {
+            cell = value.split(","); //split string into corresponding x and y components.
+            
+            let cx = parseInt(cell[0]) * spacing; 
+            let cy = parseInt(cell[1]) * spacing;
 
-        // if (dx <= 0 && dy <= 0) { // -dx, -dy
-        //     ctx.fillRect(50+Math.abs(dx),50+Math.abs(dy), spacing, spacing)
-        // } 
+            if (dx >= 0 && dy >= 0) { // +dx, +dy
+                ctx.fillRect(cx-Math.abs(dx),cy-Math.abs(dy), spacing, spacing)
+            }
 
-        // if (dx <= 0 && dy >= 0) { // -dx, +dy
-        //     ctx.fillRect(50+Math.abs(dx),50-Math.abs(dy), spacing, spacing)
-        // }
+            if (dx <= 0 && dy <= 0) { // -dx, -dy
+                ctx.fillRect(cx+Math.abs(dx),cy+Math.abs(dy), spacing, spacing)
+            } 
 
-        // if (dx >= 0 && dy <= 0) { // +dx, -dy
-        //     ctx.fillRect(50-Math.abs(dx), 50+Math.abs(dy), spacing, spacing)
-        // }
+            if (dx <= 0 && dy >= 0) { // -dx, +dy
+                ctx.fillRect(cx+Math.abs(dx),cy-Math.abs(dy), spacing, spacing)
+            }
+
+            if (dx >= 0 && dy <= 0) { // +dx, -dy
+                ctx.fillRect(cx-Math.abs(dx),cy+Math.abs(dy), spacing, spacing)
+            }
+        }
 
         ctx.stroke(); //render lines
         ctx.closePath(); //stop drawing lines
@@ -106,73 +114,89 @@ onload = () => { //await onload page event.
 
     init()
 
+    function next() { //check for next generation of to-be alive or dead cells
+        let nexts = new Set();
+        for (let cell of live) { //check all current living cells
+
+            cell = cell.split(","); //split string into corresponding x and y components.
+
+            let cx = parseInt(cell[0]); 
+            let cy = parseInt(cell[1]);
+            
+            cell = [cx,cy];
+            
+            let n = chk(cell); //number of live neighbors
+            
+            if (n == 2 || n == 3) {
+                nexts.add(cell.toString());
+            }
+    
+            //check the adjacent cells and their live neighbors
+            let a = [cell[0]-1, cell[1]-1];
+            let b = [cell[0]+0, cell[1]-1];
+            let c = [cell[0]+1, cell[1]-1];
+    
+            let d = [cell[0]-1, cell[1]+0];
+            let e = [cell[0]+1, cell[1]+0];
+    
+            let f = [cell[0]-1, cell[1]+1];
+            let g = [cell[0]+0, cell[1]+1];
+            let h = [cell[0]+1, cell[1]+1];    
+
+            let neighbors = [a,b,c,d,e,f,g,h];
+
+            for (let adj of neighbors) {
+                let n = chk(adj); //number of live neighbors the adjacent cells has.
+
+                if (n == 3) {
+                    nexts.add(adj.toString())
+                }
+            }
+        }
+
+        live = nexts;
+        console.log(live);
+    }
+
     // a b c
     // d z e
     // f g h
-    let local = null;
-    function add(cell) { //check adjacent cell (1) relative to this cell. (if conditions right, add to cell set)
-        let z = cell; //for computation of adjacent, use [x,y] of cell provided.
+    function chk(cell) { //check adjacent cells relative to this cell and return neighbor count.
+        let count = 0;
 
+        let z = [cell[0],cell[1]]; //for computation of adjacent, use values # x,y of cell provided.
         //cells in grid relative to z (itself)
 
-        let a = [z[0]-spacing, z[1]-spacing];
-        let b = [z[0]+0, z[1]-spacing];
-        let c = [z[0]+spacing, z[1]-spacing];
-        
-        let d = [z[0]-spacing, z[1]+0];
-        let e = [z[0]+spacing, z[1]+0];
+        let a = [z[0]-1, z[1]-1];
+        let b = [z[0]+0, z[1]-1];
+        let c = [z[0]+1, z[1]-1];
 
-        let f = [z[0]-spacing, z[1]+spacing];
-        let g = [z[0]+0, z[1]+spacing];
-        let h = [z[0]+spacing, z[1]+spacing];
+        let d = [z[0]-1, z[1]+0];
+        let e = [z[0]+1, z[1]+0];
 
-        //adjacent cells
-        local = [a,b,c,d,e,f,g,h];
+        let f = [z[0]-1, z[1]+1];
+        let g = [z[0]+0, z[1]+1];
+        let h = [z[0]+1, z[1]+1];
 
-        let count = null; //count adjacent cells
-        //o(8) time complexity, as it's only iterating through local. for set.has() method is o(1), there having 8 elements in local, grid has to check local 8 times. -> o(8).
-        for (let l of local) {
-            let c = [l[0]/spacing,l[1]/spacing].toString();
-            if (grid.has(c)) {
+        let neighbors = [a,b,c,f,g,h,d,e]; //relative neighbors / adjacent of original cell (z)
+
+        //check adjacent cells of already alive cells 
+        for (let cells of neighbors) {
+            cells = cells.toString();
+
+            if (live.has(cells)) {
                 count += 1;
             }
         }
-
-        console.log("neighbors of",z[0]/spacing,z[1],": ", count)
-
-        // adjacent(local);
+        return count;
     }
 
-    function adjacent(local) { //check neighboring adjacent (empty / dead) cells for neighboring alive cells. for condition 4
-        let count = null;
-        for (let l of local) {
-            let c = [l[0]/spacing, l[1]/spacing].toString();
-            if (grid.has(c)) {
-                count += 1;
-            }
-
-            if (count < 2) {
-                grid.remove(c.toString());
-            } else if (count > 3) {
-                grid.remove(c.toString());
-            }
-        }
-    }
-
+    
     function step() {
+        next()
+        draw();
 
     }
-
-    //test for neightbors of [1,1]
-    // let a = [0,0]; grid.add(a.toString());
-    // let b = [1,0]; grid.add(b.toString());
-    // let c = [2,0]; grid.add(c.toString());
-    // let d = [0,1]; grid.add(d.toString());
-    // let e = [1,1]; grid.add(e.toString());
-    // let f = [2,1]; grid.add(f.toString());
-    // let g = [0,2]; grid.add(g.toString());
-    // let h = [1,2]; grid.add(h.toString());
-    // let i = [2,2]; grid.add(i.toString());
 
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
     //have to convert coordinates [x,y] to string "[x,y]", as .add([0,0]) won't reference to the same .has([0,0])
@@ -180,7 +204,7 @@ onload = () => { //await onload page event.
 
     // onresize event handler property
     onresize = () => {
-        size((Math.round(window.innerWidth / spacing)*spacing), (Math.round(window.innerHeight / spacing)*spacing)+spacing);
+        size(Math.floor(window.innerWidth/spacing)*spacing+spacing, Math.floor(window.innerHeight/spacing)*spacing+spacing);
         draw();
     }
 
@@ -192,43 +216,45 @@ onload = () => { //await onload page event.
         x = event.clientX + dx;  
         y = event.clientY + dy;
 
-        console.log("\noriginal mousedown coordinates:",x,"x",y)
+        console.log("\n\ninit mouse pos:",x,"x",y)
+        
+        // console.log("rounded coordinates:", Math.floor(x/spacing)*spacing, Math.floor(y/spacing)*spacing) //coordinates
+        // console.log("cell number:", Math.floor(x/spacing), Math.floor(y/spacing)) //cell x,y
+        
+        let cell = [Math.floor(x/spacing)*spacing, Math.floor(y/spacing)*spacing] //let cell be the coordinates of the cell number / row-columns 
 
-        console.log("rounded coordinates:", Math.floor(x/50)*50, Math.floor(y/50)*50) //coordinates
-        console.log("cell number:", Math.floor(x/spacing), Math.floor(y/spacing)) //cell x,y
-
-        let cell = [Math.floor(x/50)*50, Math.floor(y/50)*50] //let cell be the coordinates of the cell number / row-columns 
-
-        let c = [cell[0]/spacing.toString(), cell[1]/spacing.toString()]; //let c be [row-column] format 
+        let c = [cell[0]/spacing, cell[1]/spacing].toString(); //let c be [row-column] format 
 
         //check if set contains cell already (add, remove feature), store as [row-column]
-        if (grid.has(c.toString())) {
-            grid.delete(c.toString());
+        if (!(live.has(c))) {
+            live.add(c);
+            draw();
         } else {
-            grid.add(c.toString());
+            live.delete(c)
+            draw();
         }
-        console.log(grid);
-
-        draw();
+        console.log(live);
     }
 
     onmouseup = () => {
         events.md = false;
         
-        console.log("\nchange in mouse pos from (0,0)",dx,"x",-dy); //negative dy for opposite movement of cursor in y direction
-        console.log("new mouse pos:",x + dx,"x",y + -dy);
+        console.log("\nchange in viewport pos from (0,0)",dx,"x",-dy); //negative dy for opposite movement of cursor in y direction
+        console.log("new mouse pos:",x + dx,"x",y -dy); //true total change from (0,0)
         draw();
 
         document.body.style.cursor = "default";
     }
 
     onmousemove = (event) => {
-        if (events.md) {
-            dx = x - event.clientX ; //displacement in x coordinate from origin pos.
-            dy = y - event.clientY ; //displacement in y coordinate from origin pos.
-            draw();
+        if (events.md) {   
+         
+            dx = x - event.clientX; //displacement in x coordinate from origin pos.
+            dy = y - event.clientY; //displacement in y coordinate from origin pos.
 
+            draw();        
             document.body.style.cursor = "grabbing";
+
         }
     }
 
@@ -236,14 +262,16 @@ onload = () => { //await onload page event.
     onkeydown = (event) => {
         if (event.ctrlKey) {
             // events.ctrl = true;
+            step()
+
         }
     }
  
     // onkeyup = () => {
     //     // events.ctrl = false;
     // }
-}
 
+}
 //note
 // equivalent to writing a "addEventListener() method"
 // i.e. EventTarget.addEventListener("eventType", (event) => {...}); ... allows for multiple listeners to be assigned to an element 
