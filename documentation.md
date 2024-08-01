@@ -22,24 +22,25 @@
         quick note about html:
         in a browser, (0,0) is the topleft corner of the viewport (intial viewport).
 
-        panning right (dragging left) provides +x
-        panning left (dragging right) provides -x
+        panning right (dragging left) provides +x ... dx > 0
+        panning left (dragging right) provides -x ... dx < 0
 
-        panning down (dragging up) provides +y
-        panning up (dragging down) provides -y 
+        panning down (dragging up) provides +y ... dy > 0
+        panning up (dragging down) provides -y ... dy < 0
+
         note: in the console, the y values are negated to make it make sense to visual panning.
 
         1. developing the cartesian-coordinate-system and infinite canvas, how it works is based on mouse movement and viewport origin (0,0).
-        the illusion of the canvas panning and infinite canvas is the result from change in mouse position, and change in where the lines are drawn. more in-depth in the "rendering" part.
+        the illusion of the canvas panning and infinite canvas is the result from change in mouse position, and change in where the lines are drawn onto canvas. more in-depth in the "rendering" part.
 
         onmousedown:
             x = event.clientX + dx;
             y = event.clientY + dy;
 
-            event.client ... constants, the intial mouse position (x,y), relative to the client viewport position. 
-            + dx or dy to keep onmousedown (init) coordinates align with changes of viewport from origin (0,0).
+            event.client ... constant, the intial mouse position (x,y), relative to the client viewport position / new relative viewport position. 
+            + dx or dy to keep onmousedown (init) coordinates align with changes of viewport from origin (0,0). (prevents it from jumping back to original viewport position coordinates). i.e. new relative viewport position.
 
-        without tracking x or y, next onmousedown will result in the coordinates jumping back to original viewport dimension coordinates, i.e.
+        without tracking x or y, next onmousedown will result in the coordinates jumping back to original viewport position coordinates, i.e.
         changes from panning (mouse) in x or y directions will not affect the changes in viewport origin (0,0), meaning the canvas will not move and the coordinate system will not work.
 
         onmousemove: 
@@ -50,10 +51,50 @@
             event.client ... tracks the mouse position (x,y) of client viewport and is updated as mouse moves. 
 
             dx or dy is the changes of viewport position from viewport origin (0,0).
-
-        2. rendering
             
+        2. rendering, the rendering solution utilized the coordinate system. without the addition of dx and dy variables, the canvas lines and cell objects will be stationary. (no illusion the canvas is panning)
+            the draw() function, after every change in state, this function is called to rerender the canvas.
+
+                main logic part of rendering
+
+                ctx.clearRect(0,0, canvas.width, canvas.height); this removes the previous rendered state of canvas. i.e. empty blank canvas.
+                ctx.beginPath(); create a new path for lines to be drawn. without it, previous rendered state of canvas lines will overlap.
+
+                the rendering of lines on the canvas could be thought of how old crt tvs display imagery, line by line.
+
+                quick note:
+                in the for loops, x or y starts at 0.5, here is a good explaination on why. https://diveinto.html5doctor.com/canvas.html
+
+                ctx.moveTo(x, y) - define the initial position of new line drawn.
+                ctx.lineTo(x, y) - draw line to this final position.
+
+                multiple reasons for negative dx and dy used in for loop:
+                - panning spans the opposite direction as cursor.
+                - used to rerender new lines drawn when canvas is panning (provides illusion that grid is moving). negative ensures correct rendering of initial line.
+
+            keeping rendered cells on screen / canvas.
+                prior issue faced of keeping cells rendered correctly is that the panning of canvas would alter the position of cell / unalign with the grid. 
+                the solution of this
+                    convert cell[x,y] to coordinates. cx, and cy
+                        track dx and dy of canvas from viewport origin (0,0).
+                            add or subtract depending on translation of + or - , (is cell getting closer towards relative viewport origin? or further?)
+
+                            these are opposite, as viewport origin ...
+                                dx -> + , cell -> -
+                                dy -> - , cell -> +
+
+                                resulting is the new viewport position of cell.                               
+
+                i.e. cells pans alongside canvas, canvas translate +10, cell translate +10
+
+                all the if statements is to ensure that the cell is rendered even if you overlap / can see + or - parts of the canvas.
+                i.e. canvas @ -dx, -dy ... cell is at dx (but still visible to viewport), -dy without the conditional, it would disappear. but with it, it stays rendered on canvas.
 
     definitions:
         client viewport: the region of the screen with coordinates spanning the dimensions of the window.
-        relative viewport coordinates: the new coordinates which span the viewport after panning (i.e. coordinates relative to new viewport position).
+
+        viewport position: the updated origin coordinates (0,0) of the viewport after panning. 
+        relative viewport position: the new coordinates which span the viewport after panning (i.e. coordinates relative to new viewport position).
+
+    note:
+        position: refers to two points in space i.e. a coordinate (x,y)
