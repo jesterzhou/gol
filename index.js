@@ -38,7 +38,7 @@ onload = () => { //await onload page event.
     }
 
     function draw() { //draw canvas grid
-        ctx.save();
+
         ctx.fillStyle = cell_color;
         ctx.strokeStyle = lines;
 
@@ -50,32 +50,35 @@ onload = () => { //await onload page event.
         
         //add '/ spacing' after x < canvas.width + Math.abs(dx) , to view original viewport sized canvas
         // column lines
+        
         for (let x = 0.5; x < canvas.width + Math.abs(dx); x += spacing) {
+            
             if (dx > 0) {
-                //span +x
+                //span +x (right)
                 ctx.moveTo(-dx + x, 0); //dx + x, top
                 ctx.lineTo(-dx + x, canvas.height); //dx -> x, bottom
+                
             } else {
-                //span -x, + canvas.width to span additional page, not until (0,0) / previous pos, but rather entire page.
+                //span -x, + canvas.width to span additional page, not until (0,0) / previous pos, but rather entire page. i.e. await after viewport x dimension passes before spanning -x (left)
                 ctx.moveTo(-dx - x + canvas.width, 0); //-inf, top
                 ctx.lineTo(-dx - x + canvas.width, canvas.height); //-inf, top
             }
         }
     
         // row lines
-        for (let y = 0.5; y < canvas.height + Math.abs(dy); y += spacing) {
+        for (let y = 0.5; y < canvas.height + Math.abs(dy) ; y += spacing) {
             if (dy > 0) {
                 //span (down) +y 
                 ctx.moveTo(0, -dy + y); //-inf, top
                 ctx.lineTo(canvas.width , -dy + y) //inf, -inf    
             } else {
                 //span (up) -y
-                ctx.moveTo(0,-dy - y + canvas.height);
+                ctx.moveTo(0, -dy - y + canvas.height);
                 ctx.lineTo(canvas.width, -dy - y + canvas.height);
             }
         }
 
-        //four conditions of cell's dx, and dy (used to keep it rendered onpage)
+        //four conditions of cell's dx, and dy (used to keep it rendered onpage, when mouse pans in certain direction)
         // dx, dy
         
         // -dx, -dy 
@@ -192,10 +195,9 @@ onload = () => { //await onload page event.
     }
 
     
-    function step() {
+    function step() { //step function, to proceed to next generation call this function -> calling next() function
         next()
         draw();
-
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
@@ -211,7 +213,7 @@ onload = () => { //await onload page event.
     // onmouse... event handler property
     onmousedown = (event) => {
         events.md = true;
-
+        
         // set origin mouse pos. (+dx and dy to account for changes)
         x = event.clientX + dx;  
         y = event.clientY + dy;
@@ -224,7 +226,7 @@ onload = () => { //await onload page event.
         let cell = [Math.floor(x/spacing)*spacing, Math.floor(y/spacing)*spacing] //let cell be the coordinates of the cell number / row-columns 
 
         let c = [cell[0]/spacing, cell[1]/spacing].toString(); //let c be [row-column] format 
-
+        
         //check if set contains cell already (add, remove feature), store as [row-column]
         if (!(live.has(c))) {
             live.add(c);
@@ -248,7 +250,7 @@ onload = () => { //await onload page event.
 
     onmousemove = (event) => {
         if (events.md) {   
-         
+        
             dx = x - event.clientX; //displacement in x coordinate from origin pos.
             dy = y - event.clientY; //displacement in y coordinate from origin pos.
 
@@ -258,18 +260,16 @@ onload = () => { //await onload page event.
         }
     }
 
-    // //onkey... event handler property
+    let kd = []; //track keys down states
+    //onkey... event handler property
     onkeydown = (event) => {
-        if (event.ctrlKey) {
-            // events.ctrl = true;
-            step()
-
-        }
+        kd[kd.length] = event.key; //record onkeydown event to kd
+        
     }
  
-    // onkeyup = () => {
-    //     // events.ctrl = false;
-    // }
+    onkeyup = () => {
+        kd = []; //clear keys down object when keys are not pressed
+    }
 
 }
 //note
