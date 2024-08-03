@@ -8,10 +8,26 @@
 body { /* global body */
     margin: 0;
     overflow: hidden; 
+
+    font-family: Arial;
 }
 
 /* classes etc... */
 
 .wrapper {
     display: flex; 
+}
+
+#overlay {
+    display: inline;
+    background-color: #ffffff;
+    
+    margin: 10px;
+    padding: 5px;
+
+    border: 1px rgb(0, 0, 0) solid;
+    border-radius: 0px;
+
+    position: absolute;
+    user-select: none; 
 }
