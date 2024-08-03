@@ -11,6 +11,8 @@ onload = () => { //await onload page event.
         ctrl : false, //ctrl key down event.
     }
 
+    let kd = []; //track keys down states
+
     //manage objects
     let live = new Set(); // add objects of cell, store it as [row-column], not coordinate [x,y] ... all live cells
 
@@ -227,15 +229,15 @@ onload = () => { //await onload page event.
 
         let c = [cell[0]/spacing, cell[1]/spacing].toString(); //let c be [row-column] format 
         
-        //check if set contains cell already (add, remove feature), store as [row-column]
-        if (!(live.has(c))) {
-            live.add(c);
-            draw();
-        } else {
-            live.delete(c)
-            draw();
+        if (!kd.includes("Control")) { //used so that when panning with ctrl + md, doesnt accidentally add cell to live
+            //check if set contains cell already (add, remove feature), store as [row-column]
+            if (!(live.has(c))) {
+                live.add(c);
+            } else {
+                live.delete(c)
+            }
         }
-        console.log(live);
+        draw()
     }
 
     onmouseup = () => {
@@ -249,7 +251,7 @@ onload = () => { //await onload page event.
     }
 
     onmousemove = (event) => {
-        if (events.md) {   
+        if (events.md && kd.includes("Control")) {   
         
             dx = x - event.clientX; //displacement in x coordinate from origin pos.
             dy = y - event.clientY; //displacement in y coordinate from origin pos.
@@ -257,14 +259,25 @@ onload = () => { //await onload page event.
             draw();        
             document.body.style.cursor = "grabbing";
 
+        } else { //when control is released, then mousedown = false, you want this because if state of md != false, then on next ctrl + mousedown, cursor will jump to last previous onmousedown.
+            //also does not allow for panning after md = true, ... only can be kd.includes("Control") + events.md 
+            events.md = false;
+            document.body.style.cursor = "default"
         }
     }
 
-    let kd = []; //track keys down states
     //onkey... event handler property
     onkeydown = (event) => {
         kd[kd.length] = event.key; //record onkeydown event to kd
         
+        if (kd.length > 1) { //ensures that holding of ctrl key or any other key does NOT take up extra memory. especially when user wants to pan for long periods. also acts as a safeguard for 1 key press at a time.
+            kd = [];
+            kd[kd.length] = event.key
+        }
+
+        if (kd.includes(" ")) { // " " <- this is what event.key tracks as spacebar lol
+            step()
+        }
     }
  
     onkeyup = () => {
