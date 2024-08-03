@@ -6,6 +6,7 @@ onload = () => { //await onload page event.
     let lines = "#737A7A"; //grid grey.
     let cell_color = "#ccc"; //cell colour grey.
 
+    //manage state
     let events = { //state of events.
         md : false, //mouse key down event.
         ctrl : false, //ctrl key down event.
@@ -24,9 +25,14 @@ onload = () => { //await onload page event.
     let dx = 0;
     let dy = 0;
 
-    //global variables
+    //html stuff
     let canvas = document.getElementById("cell");
     let ctx = canvas.getContext("2d"); //context of canvas, assigned on onload.
+
+    let gen_count = 0; //generation count of simulation
+    gen = document.getElementById("gen"); //generation count div
+
+    let cell_count = document.getElementById("count")
 
     function size(width, height) {
         canvas.width = width; 
@@ -160,7 +166,7 @@ onload = () => { //await onload page event.
         }
 
         live = nexts;
-        console.log(live);
+        // console.log(live);
     }
 
     // a b c
@@ -196,10 +202,15 @@ onload = () => { //await onload page event.
         return count;
     }
 
-    
     function step() { //step function, to proceed to next generation call this function -> calling next() function
         next()
         draw();
+
+        //update counters
+        gen_count += 1
+        gen.innerHTML = ("generation #: "+ gen_count);
+    
+        cell_count.innerHTML = ("alive cell #: "+ live.size);
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
@@ -237,7 +248,9 @@ onload = () => { //await onload page event.
                 live.delete(c)
             }
         }
-        draw()
+
+        cell_count.innerHTML = ("alive cell #: "+ live.size);
+        draw();
     }
 
     onmouseup = () => {
@@ -269,14 +282,24 @@ onload = () => { //await onload page event.
     //onkey... event handler property
     onkeydown = (event) => {
         kd[kd.length] = event.key; //record onkeydown event to kd
-        
+
         if (kd.length > 1) { //ensures that holding of ctrl key or any other key does NOT take up extra memory. especially when user wants to pan for long periods. also acts as a safeguard for 1 key press at a time.
             kd = [];
             kd[kd.length] = event.key
         }
 
         if (kd.includes(" ")) { // " " <- this is what event.key tracks as spacebar lol
-            step()
+            step();
+        } 
+
+        if (kd.includes("x")) { //reset
+            live = new Set();
+            draw();
+        
+            gen_count = 0;
+            gen.innerHTML = ("generation #: "+ gen_count)
+
+            cell_count.innerHTML = ("alive cell #: "+ 0)
         }
     }
  
