@@ -213,6 +213,44 @@ onload = () => { //await onload page event.
         cell_count.innerHTML = ("alive cell #: "+ live.size);
     }
 
+    //for the static noise map, I followed 
+    // https://joeiddon.github.io/projects/javascript/perlin.html <- contains stuff about static noise map.
+    // https://www.redblobgames.com/maps/terrain-from-noise/ <- contains stuff about static noise map.
+    // https://adrianb.io/2014/08/09/perlinnoise.html <- not static noise map, but neat article.
+
+    // why use static noise? since cells can only be 0 or 1 state, we can generate a grid of n*n and each grid box will contain a value from
+    // 0.0 -> 1.0, we can round up or down to make that value 0 or 1. (giving alive or dead cell)
+    
+
+    function static() {
+        let row = [];
+        live.clear();
+
+        for (let y = 0; y < Math.round(window.innerHeight/spacing); y++) { //rows
+            let column = [];
+
+            for (let x = 0; x < Math.round(window.innerWidth/spacing); x++) { //columns
+                column.push(Math.random());
+            }
+            row.push(column);
+        }
+        console.log(row)
+        //iterate through each row
+        for (let r = 0; r < row.length; r++) {
+            for (let c = 0; c < row[r].length; c++) {
+                
+                if (row[r][c] > 0.67) { //if row[n] > ... , append [x,y] / [c#,r#] to live ... the threshold selected is arbitrary.
+                    // console.log(c,r)
+                    live.add([c,r].toString());
+
+                    cell_count.innerHTML = ("alive cell #:" + live.size);
+                }
+            }
+        }
+        draw();
+    }
+    
+    
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
     //have to convert coordinates [x,y] to string "[x,y]", as .add([0,0]) won't reference to the same .has([0,0])
     //my understanding is that strings are stored in string pools, and since ["a","b"] is just an object of type String {"a", "b"}, it'll be in the string-pool, where it can be referenced.
@@ -300,6 +338,10 @@ onload = () => { //await onload page event.
             gen.innerHTML = ("generation #: "+ gen_count)
 
             cell_count.innerHTML = ("alive cell #: "+ 0)
+        }
+
+        if (kd.includes("z")) {
+            static();
         }
     }
  
