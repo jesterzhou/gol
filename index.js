@@ -29,11 +29,15 @@ onload = () => { //await onload page event.
     let canvas = document.getElementById("cell");
     let ctx = canvas.getContext("2d"); //context of canvas, assigned on onload.
 
+    //generation counter and cell counter overlay
     let gen_count = 0; //generation count of simulation
     gen = document.getElementById("gen"); //generation count div
 
     let cell_count = document.getElementById("count")
 
+    //html menu overlay , used to toggle between visibility of menu, t or f.
+    let instr = document.getElementById("instructions");
+    
     function size(width, height) {
         canvas.width = width; 
         canvas.height = height;
@@ -234,7 +238,7 @@ onload = () => { //await onload page event.
             }
             row.push(column);
         }
-        console.log(row)
+        // console.log(row)
         //iterate through each row
         for (let r = 0; r < row.length; r++) {
             for (let c = 0; c < row[r].length; c++) {
@@ -250,7 +254,16 @@ onload = () => { //await onload page event.
         draw();
     }
     
+    function instruction() { //toggle instructions tab / menu
+        if (instr.style.visibility === 'hidden') {
+            instr.style.visibility = 'visible'
+        } else {
+            instr.style.visibility = 'hidden'
+        }
+    }
     
+    instruction(); //display instructions tab / menu
+
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
     //have to convert coordinates [x,y] to string "[x,y]", as .add([0,0]) won't reference to the same .has([0,0])
     //my understanding is that strings are stored in string pools, and since ["a","b"] is just an object of type String {"a", "b"}, it'll be in the string-pool, where it can be referenced.
@@ -278,9 +291,10 @@ onload = () => { //await onload page event.
 
         let c = [cell[0]/spacing, cell[1]/spacing].toString(); //let c be [row-column] format 
         
-        if (!kd.includes("Control")) { //used so that when panning with ctrl + md, doesnt accidentally add cell to live
+        if (!kd.includes("Control") && instr.style.visibility === "hidden") { //used so that when panning with ctrl + md, doesnt accidentally add cell to live ... second part, when instruction menu up, cannot place live cells.
+
             //check if set contains cell already (add, remove feature), store as [row-column]
-            if (!(live.has(c))) {
+            if (!(live.has(c))) { 
                 live.add(c);
             } else {
                 live.delete(c)
@@ -342,6 +356,10 @@ onload = () => { //await onload page event.
 
         if (kd.includes("z")) {
             static();
+        }
+
+        if (kd.includes("m")) {
+            instruction();
         }
     }
  
