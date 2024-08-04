@@ -77,17 +77,21 @@ a {
 #footer {
     display: inline-grid;
     
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr 1fr 1fr; 
     width: 100%;
 
     font-size: small;
 }
 
-#footer-child {
+.footer-child {
     display: flex;
     justify-content: end;
 
     font-size: small;
+}
+
+#author {
+    justify-content: center;
 }
 
 
