@@ -261,8 +261,6 @@ onload = () => { //await onload page event.
             instr.style.visibility = 'hidden'
         }
     }
-    
-    instruction(); //display instructions tab / menu
 
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/has
     //have to convert coordinates [x,y] to string "[x,y]", as .add([0,0]) won't reference to the same .has([0,0])
