@@ -12,9 +12,29 @@
         <canvas id=cell width="0", height="0"></canvas>
 
         <div id="overlay">
-            
             <div id="gen">generation #: 0</div>
             <div id="count">alive cell #: 0</div>
+        </div>
+
+        <div id="instructions">
+            <div id="rules">
+                game of life rules:
+                <br> 1. live cell with fewer than 2 live neighbors -> dies. (underpopulation)
+                <br> 2. live cell with 2 or 3 live neighbors -> lives on to the next generation. (perfect)
+                <br> 3. live cell with more than 3 live neighbors -> dies. (overpopulation)
+                <br> 4. "dead" / unpopulated cell with exactly 3 live neighbors -> becomes a live cell. (reproduction)
+                <br>
+                <div id="keybinds"><span id="keys">ctrl</span> <span id="keys">md</span> - translate canvas in x and y axis.</div>
+                <div id="keybinds"><span id=keys>space</span> - proceed to next generation.</div>
+                <div id="keybinds"><span id="keys">z</span> - randomize live cell arrangement.</div>
+                <div id="keybinds"><span id="keys">x</span> - clear canvas of all living cells.</div>
+                <div id="keybinds"><span id="keys">m</span> - toggle this menu.</div>
+            </div>
+            
+            <div id="footer">
+                <span id="footer-child"><a href="https://github.com/jesterzhou/" target="_blank">jester zhou 🔗</a></span>
+                <span id="footer-child"><a href="https://github.com/jesterzhou/gol/" target="_blank">view the sourcecode 🔗</a></span>
+            </div>
         </div>
     </div>
 </body>
