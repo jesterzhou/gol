@@ -77,13 +77,17 @@
                 the solution of this
                     convert cell[x,y] to coordinates. cx, and cy
                         track dx and dy of canvas from viewport origin (0,0).
-                            add or subtract depending on translation of + or - , (is cell getting closer towards relative viewport origin? or further?)
+                            add or subtract depending on translation of + or - , (is cell getting closer towards viewport origin? or further?)
 
-                            these are opposite, as viewport origin ...
-                                dx -> + , cell -> -
-                                dy -> - , cell -> +
+                            (how to know if to add or subtract dx or dy?)
+                            these are opposite, as canvas pans,
+                                dx -> + , cell -> - ... dx panning right from vpo, cell panning left to vpo
+                                dy -> - , cell -> + ... dy panning down from vpo, cell panning up to vpo
 
-                                resulting is the new viewport position of cell.                               
+                                dx -> - , cell -> +
+                                dy -> + , cell -> -
+
+                                resulting is the new translated client viewport position of cell.
 
                 i.e. cells pans alongside canvas, canvas translate +10, cell translate +10
 
