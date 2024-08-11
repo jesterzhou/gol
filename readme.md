@@ -1,3 +1,5 @@
+![](gameoflife.gif)
+
     cellular automation "game of life" by john h. conway
 
     rules: 
@@ -13,6 +15,3 @@
     [d] [_] [e]
     [f] [g] [h]
 
-    additional features (can implement or havent figured):
-    - add zoom feature (in and out) for canvas
-    - better rendering system / caching system, i.e. when cells are not within viewport, they can "disappear" to save on memory.
