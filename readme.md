@@ -1,6 +1,6 @@
 ![](gameoflife.gif)
 
-    cellular automation "game of life" by john h. conway
+    cellular automation "game of life" by john h. conway implemented in javascript (canvas api)
 
     rules: 
     1. live cell with fewer than 2 live neighbors -> dies. (underpopulation)
