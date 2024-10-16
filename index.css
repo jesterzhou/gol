@@ -85,7 +85,7 @@ a {
 
 .footer-child {
     display: flex;
-    justify-content: end;
+    justify-content: center;
 
     font-size: small;
 }
